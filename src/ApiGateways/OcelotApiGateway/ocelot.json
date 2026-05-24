@@ -1,13 +1,13 @@
 {
   "Routes": [
-    //Transaction API
+    // Transaction API
     {
       "DownstreamPathTemplate": "/api/v1/Transactions/{accountId}",
-      "DownstreamScheme": "http",
+      "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "transaction.api",
-          "Port": "8080"
+          "Host": "localhost",
+          "Port": 58626
         }
       ],
       "UpstreamPathTemplate": "/Transactions/{accountId}",
@@ -15,24 +15,24 @@
     },
     {
       "DownstreamPathTemplate": "/api/v1/Transactions",
-      "DownstreamScheme": "http",
+      "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "transaction.api",
-          "Port": "8080"
+          "Host": "localhost",
+          "Port": 58626
         }
       ],
       "UpstreamPathTemplate": "/Transactions",
       "UpstreamHttpMethod": [ "GET" ]
     },
-    //Account API
+    // Account API
     {
       "DownstreamPathTemplate": "/api/v1/Accounts",
-      "DownstreamScheme": "http",
+      "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "account.api",
-          "Port": "8080"
+          "Host": "localhost",
+          "Port": 58630
         }
       ],
       "UpstreamPathTemplate": "/Accounts",
@@ -40,11 +40,11 @@
     },
     {
       "DownstreamPathTemplate": "/api/v1/Accounts/Adding",
-      "DownstreamScheme": "http",
+      "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "account.api",
-          "Port": "8080"
+          "Host": "localhost",
+          "Port": 58630
         }
       ],
       "UpstreamPathTemplate": "/Accounts/Adding",
@@ -52,11 +52,11 @@
     },
     {
       "DownstreamPathTemplate": "/api/v1/Accounts/Withdrawing",
-      "DownstreamScheme": "http",
+      "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "account.api",
-          "Port": "8080"
+          "Host": "localhost",
+          "Port": 58630
         }
       ],
       "UpstreamPathTemplate": "/Accounts/Withdrawing",
@@ -64,24 +64,24 @@
     },
     {
       "DownstreamPathTemplate": "/api/v1/Accounts/{id}",
-      "DownstreamScheme": "http",
+      "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "account.api",
-          "Port": "8080"
+          "Host": "localhost",
+          "Port": 58630
         }
       ],
       "UpstreamPathTemplate": "/Accounts/{id}",
       "UpstreamHttpMethod": [ "GET" ]
     },
-    //Customer API
+    // Customer API
     {
       "DownstreamPathTemplate": "/api/v1/Customers",
-      "DownstreamScheme": "http",
+      "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "customer.api",
-          "Port": "8080"
+          "Host": "localhost",
+          "Port": 44359
         }
       ],
       "UpstreamPathTemplate": "/Customers",
@@ -89,11 +89,11 @@
     },
     {
       "DownstreamPathTemplate": "/api/v1/Customers/{id}",
-      "DownstreamScheme": "http",
+      "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "customer.api",
-          "Port": "8080"
+          "Host": "localhost",
+          "Port": 44359
         }
       ],
       "UpstreamPathTemplate": "/Customers/{id}",
@@ -101,6 +101,6 @@
     }
   ],
   "GlobalConfiguration": {
-    "BaseUrl": "http://localhost:8010"
+    "BaseUrl": "https://localhost:58639"
   }
 }

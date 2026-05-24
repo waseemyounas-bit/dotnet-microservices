@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Account.Application.Features.Accounts.Commands.Adding
 {
-    public class AddingHandler : IRequestHandler<AddingCommand>
+    public class AddingHandler : IRequestHandler<AddingCommand,Unit>
     {
         private readonly IAccountRepository _accountRepository;
         private readonly IMapper _mapper;
@@ -31,9 +31,9 @@ namespace Account.Application.Features.Accounts.Commands.Adding
             return Unit.Value;
         }
 
-        Task IRequestHandler<AddingCommand>.Handle(AddingCommand request, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
+        //Task IRequestHandler<AddingCommand>.Handle(AddingCommand request, CancellationToken cancellationToken)
+        //{
+        //    throw new NotImplementedException();
+        //}
     }
 }

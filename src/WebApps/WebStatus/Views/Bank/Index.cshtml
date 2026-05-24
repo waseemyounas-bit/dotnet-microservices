@@ -1,0 +1,33 @@
+﻿@model dynamic
+@{
+    ViewData["Title"] = "User Interface";
+}
+<h1>@ViewData["Title"]</h1>
+
+
+<h2>Customer</h2>
+<form asp-action="CreateCustomer" method="post">
+    <input type="text" name="Email" placeholder="Email" required />
+    <input type="text" name="FirstName" placeholder="First Name" required />
+    <input type="text" name="LastName" placeholder="Last Name" required />
+    <button type="submit">Create Customer</button>
+</form>
+
+<h2>Account</h2>
+<form asp-action="CreateAccount" method="post">
+    <input type="text" name="CustomerId" placeholder="CustomerId" required />
+    <input type="number" name="Balance" placeholder="Initial Balance" required />
+    <button type="submit">Create Account</button>
+</form>
+
+<h2>Transaction</h2>
+<form asp-action="AddTransaction" method="post">
+    <input type="text" name="AccountId" placeholder="AccountId" required />
+    <input type="text" name="CustomerId" placeholder="CustomerId" required />
+    <input type="number" name="Amount" placeholder="Amount" required />
+    <select name="Type">
+        <option>Adding</option>
+        <option>Withdrawing</option>
+    </select>
+    <button type="submit">Submit Transaction</button>
+</form>

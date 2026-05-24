@@ -1,32 +1,49 @@
-using Common.Logging;
-using Ocelot.Cache.CacheManager;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
-using Serilog;
+using System.Net.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Allow self-signed certificates for local HTTPS services
+builder.Services.AddHttpClient("AllowSelfSigned")
+    .ConfigurePrimaryHttpMessageHandler(() =>
+        new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback =
+                HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+        });
 
-builder.Services.AddOcelot().AddCacheManager(settings => settings.WithDictionaryHandle());
+// Add Ocelot with SSL bypass
+builder.Services.AddOcelot()
+    .AddDelegatingHandler<IgnoreSslHandler>(true);
 
-builder.Configuration.AddJsonFile($"ocelot.{builder.Environment.EnvironmentName}.json", true, true);
-builder.Host.UseSerilog(SeriLogger.Configure);
+// Load ocelot.json
+builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
 }
 
-app.UseHttpsRedirection();
-
 app.UseRouting();
-
 app.MapControllers();
 
+// Run Ocelot middleware
 await app.UseOcelot();
 
 app.Run();
+
+// Delegating handler to ignore SSL validation
+public class IgnoreSslHandler : DelegatingHandler
+{
+    public IgnoreSslHandler()
+    {
+        InnerHandler = new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback =
+                HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+        };
+    }
+}

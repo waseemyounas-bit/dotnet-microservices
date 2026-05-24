@@ -18,7 +18,7 @@ namespace Customer.Infrastructure.Persistence
         {
             return new List<Domain.Entities.Customer>
             {
-                new Domain.Entities.Customer(Guid.Parse("ef533977-e666-4c75-ac4e-ea1de9ea4aef"), "alperen171195@hotmail.com", "Alperen", "Küçükali")
+                new Domain.Entities.Customer(Guid.Parse("ef533977-e666-4c75-ac4e-ea1de9ea4aef"), "alperen171195@hotmail.com", "Alperen", "Joe")
             };
         }
     }
