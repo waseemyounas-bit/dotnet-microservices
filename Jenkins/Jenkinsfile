@@ -42,7 +42,7 @@ spec:
       tty: true
 
     - name: jnlp
-      image: jenkins/inbound-agent:jdk17
+      image: jenkins/inbound-agent:jdk21
 '''
         }
     }
