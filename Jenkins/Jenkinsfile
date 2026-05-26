@@ -1,0 +1,110 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_REGION = 'us-east-1'
+        AWS_ACCOUNT_ID = '123456789012'
+        ECR_REGISTRY = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+
+        AWS_CREDENTIALS_ID = 'aws-prod-credentials'
+        GITOPS_SSH_CREDENTIALS_ID = 'gitops-ssh-key'
+
+        GITOPS_REPO = 'git@github.com:your-org/my-api.git'
+        GITOPS_BRANCH = 'main'
+
+        IMAGE_TAG = "${env.BUILD_NUMBER}-${sh(script:'git rev-parse --short=8 HEAD', returnStdout: true).trim()}"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Restore and Test') {
+            steps {
+                sh '''
+                    dotnet restore src/**/*.csproj
+                    dotnet build src/**/*.csproj --configuration Release
+                '''
+            }
+        }
+
+        stage('Login to ECR') {
+            steps {
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: "${AWS_CREDENTIALS_ID}"
+                ]]) {
+                    sh 'aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY'
+                }
+            }
+        }
+
+        stage('Build and Push Docker Images') {
+            steps {
+                script {
+                    def services = [
+                        [name: 'apigateways', dockerfile: 'src/apigateways/OceloApiGateway/Dockerfile', image: 'ocelot-api-gateway'],
+                        [name: 'account', dockerfile: 'src/services/account/account.api/Dockerfile', image: 'account-api'],
+                        [name: 'customer-grpc', dockerfile: 'src/services/customer/customer.grpc/Dockerfile', image: 'customer-grpc'],
+                        [name: 'customer-api', dockerfile: 'src/services/customer/customer.api/Dockerfile', image: 'customer-api'],
+                        [name: 'transaction', dockerfile: 'src/services/transaction/transaction.api/Dockerfile', image: 'transaction-api'],
+                        [name: 'webstatus', dockerfile: 'src/webapps/webstatus/Dockerfile', image: 'webstatus-ui']
+                    ]
+
+                    services.each { svc ->
+                        echo "Building ${svc.name}..."
+                        sh """
+                            docker build -f ${svc.dockerfile} -t ${ECR_REGISTRY}/${svc.image}:${IMAGE_TAG} .
+                            docker push ${ECR_REGISTRY}/${svc.image}:${IMAGE_TAG}
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Update Helm values.yaml') {
+            steps {
+                sshagent(['GITOPS_SSH_CREDENTIALS_ID']) {
+                    script {
+                        def services = [
+                            [key: 'apigateways', image: 'ocelot-api-gateway'],
+                            [key: 'account', image: 'account-api'],
+                            [key: 'customerGrpc', image: 'customer-grpc'],
+                            [key: 'customerApi', image: 'customer-api'],
+                            [key: 'transaction', image: 'transaction-api'],
+                            [key: 'webstatus', image: 'webstatus-ui']
+                        ]
+
+                        services.each { svc ->
+                            sh """
+                                yq -i '.services.${svc.key}.image.repository = "${ECR_REGISTRY}/${svc.image}"' my-api/charts/values.yaml
+                                yq -i '.services.${svc.key}.image.tag = "${IMAGE_TAG}"' my-api/charts/values.yaml
+                            """
+                        }
+
+                        sh """
+                            cd my-api
+                            git config user.email "jenkins@yourcompany.com"
+                            git config user.name "jenkins-ci"
+                            git add charts/values.yaml
+                            git commit -m "Update images for build ${IMAGE_TAG}" || echo "No changes to commit"
+                            git push origin ${GITOPS_BRANCH}
+                        """
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "All services built, pushed, and Helm chart updated. ArgoCD will sync automatically."
+        }
+        failure {
+            echo "Build failed."
+        }
+    }
+}
