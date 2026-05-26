@@ -10,7 +10,7 @@ def services = [
 pipeline {
     agent {
         kubernetes {
-            label 'k8s-agent'
+            label 'dotnet-kaniko-agent'
             defaultContainer 'tools'
             yaml '''
 apiVersion: v1
