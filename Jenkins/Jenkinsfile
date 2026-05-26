@@ -1,11 +1,55 @@
+def services = [
+    [name: 'apigateways',   dockerfile: 'src/apigateways/OcelotApiGateway/Dockerfile',        image: 'ocelot-api-gateway', valuesKey: 'apigateways'],
+    [name: 'account',       dockerfile: 'src/services/account/account.api/Dockerfile',        image: 'account-api',        valuesKey: 'account'],
+    [name: 'customer-grpc', dockerfile: 'src/services/customer/customer.grpc/Dockerfile',     image: 'customer-grpc',      valuesKey: 'customerGrpc'],
+    [name: 'customer-api',  dockerfile: 'src/services/customer/customer.api/Dockerfile',      image: 'customer-api',       valuesKey: 'customerApi'],
+    [name: 'transaction',   dockerfile: 'src/services/transaction/transaction.api/Dockerfile', image: 'transaction-api',    valuesKey: 'transaction'],
+    [name: 'webstatus',     dockerfile: 'src/webapps/webstatus/Dockerfile',                  image: 'webstatus-ui',       valuesKey: 'webstatus']
+]
+
 pipeline {
     agent {
-        label 'k8s-agent'
+        kubernetes {
+            label 'k8s-agent'
+            defaultContainer 'tools'
+            yaml '''
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+    - name: tools
+      image: alpine:3.20
+      command:
+        - cat
+      tty: true
+
+    - name: dotnet
+      image: mcr.microsoft.com/dotnet/sdk:8.0
+      command:
+        - cat
+      tty: true
+
+    - name: awscli
+      image: amazon/aws-cli:2
+      command:
+        - cat
+      tty: true
+
+    - name: kaniko
+      image: gcr.io/kaniko-project/executor:debug
+      command:
+        - /busybox/cat
+      tty: true
+
+    - name: jnlp
+      image: jenkins/inbound-agent:jdk17
+'''
+        }
     }
 
     environment {
-        AWS_REGION = 'us-east-1'
-        AWS_ACCOUNT_ID = '123456789012'
+        AWS_REGION = 'eu-north-1'
+        AWS_ACCOUNT_ID = '007079198698'
         ECR_REGISTRY = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
 
         AWS_CREDENTIALS_ID = 'aws-prod-credentials'
@@ -13,88 +57,145 @@ pipeline {
 
         GITOPS_REPO = 'git@github.com:your-org/my-api.git'
         GITOPS_BRANCH = 'main'
-
-        IMAGE_TAG = "${env.BUILD_NUMBER}-${sh(script:'git rev-parse --short=8 HEAD', returnStdout: true).trim()}"
     }
 
     stages {
-        stage('Checkout') {
+        stage('Install Tools') {
             steps {
-                checkout scm
-            }
-        }
-
-        stage('Restore and Test') {
-            steps {
-                sh '''
-                    dotnet restore src/**/*.csproj
-                    dotnet build src/**/*.csproj --configuration Release
-                '''
-            }
-        }
-
-        stage('Login to ECR') {
-            steps {
-                withCredentials([[
-                    $class: 'AmazonWebServicesCredentialsBinding',
-                    credentialsId: "${AWS_CREDENTIALS_ID}"
-                ]]) {
-                    sh 'aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY'
+                container('tools') {
+                    sh '''
+                        apk add --no-cache git openssh-client yq
+                        git --version
+                        yq --version
+                    '''
                 }
             }
         }
 
-        stage('Build and Push Docker Images') {
+        stage('Checkout Application Repo') {
             steps {
-                script {
-                    def services = [
-                        [name: 'apigateways', dockerfile: 'src/apigateways/OceloApiGateway/Dockerfile', image: 'ocelot-api-gateway'],
-                        [name: 'account', dockerfile: 'src/services/account/account.api/Dockerfile', image: 'account-api'],
-                        [name: 'customer-grpc', dockerfile: 'src/services/customer/customer.grpc/Dockerfile', image: 'customer-grpc'],
-                        [name: 'customer-api', dockerfile: 'src/services/customer/customer.api/Dockerfile', image: 'customer-api'],
-                        [name: 'transaction', dockerfile: 'src/services/transaction/transaction.api/Dockerfile', image: 'transaction-api'],
-                        [name: 'webstatus', dockerfile: 'src/webapps/webstatus/Dockerfile', image: 'webstatus-ui']
-                    ]
+                container('tools') {
+                    checkout scm
 
-                    services.each { svc ->
-                        echo "Building ${svc.name}..."
-                        sh """
-                            docker build -f ${svc.dockerfile} -t ${ECR_REGISTRY}/${svc.image}:${IMAGE_TAG} .
-                            docker push ${ECR_REGISTRY}/${svc.image}:${IMAGE_TAG}
-                        """
+                    script {
+                        def shortCommit = sh(
+                            script: 'git rev-parse --short=8 HEAD',
+                            returnStdout: true
+                        ).trim()
+
+                        env.IMAGE_TAG = "${env.BUILD_NUMBER}-${shortCommit}"
+                        echo "IMAGE_TAG = ${env.IMAGE_TAG}"
                     }
                 }
             }
         }
 
-        stage('Update Helm values.yaml') {
+        stage('Restore and Build .NET Projects') {
             steps {
-                sshagent(['GITOPS_SSH_CREDENTIALS_ID']) {
-                    script {
-                        def services = [
-                            [key: 'apigateways', image: 'ocelot-api-gateway'],
-                            [key: 'account', image: 'account-api'],
-                            [key: 'customerGrpc', image: 'customer-grpc'],
-                            [key: 'customerApi', image: 'customer-api'],
-                            [key: 'transaction', image: 'transaction-api'],
-                            [key: 'webstatus', image: 'webstatus-ui']
-                        ]
+                container('dotnet') {
+                    sh '''
+                        dotnet --info
 
-                        services.each { svc ->
-                            sh """
-                                yq -i '.services.${svc.key}.image.repository = "${ECR_REGISTRY}/${svc.image}"' my-api/charts/values.yaml
-                                yq -i '.services.${svc.key}.image.tag = "${IMAGE_TAG}"' my-api/charts/values.yaml
-                            """
+                        for project in $(find src -name "*.csproj"); do
+                            echo "Restoring $project"
+                            dotnet restore "$project"
+
+                            echo "Building $project"
+                            dotnet build "$project" --configuration Release --no-restore
+                        done
+                    '''
+                }
+            }
+        }
+
+        stage('Ensure ECR Repositories Exist') {
+            steps {
+                container('awscli') {
+                    withCredentials([[
+                        $class: 'AmazonWebServicesCredentialsBinding',
+                        credentialsId: "${AWS_CREDENTIALS_ID}"
+                    ]]) {
+                        script {
+                            services.each { svc ->
+                                sh """
+                                    aws ecr describe-repositories \
+                                      --repository-names ${svc.image} \
+                                      --region ${AWS_REGION} \
+                                    || aws ecr create-repository \
+                                      --repository-name ${svc.image} \
+                                      --region ${AWS_REGION}
+                                """
+                            }
                         }
+                    }
+                }
+            }
+        }
 
-                        sh """
-                            cd my-api
-                            git config user.email "jenkins@yourcompany.com"
-                            git config user.name "jenkins-ci"
-                            git add charts/values.yaml
-                            git commit -m "Update images for build ${IMAGE_TAG}" || echo "No changes to commit"
-                            git push origin ${GITOPS_BRANCH}
-                        """
+        stage('Build and Push Docker Images with Kaniko') {
+            steps {
+                container('kaniko') {
+                    withCredentials([[
+                        $class: 'AmazonWebServicesCredentialsBinding',
+                        credentialsId: "${AWS_CREDENTIALS_ID}"
+                    ]]) {
+                        script {
+                            services.each { svc ->
+                                echo "Building and pushing ${svc.name}"
+
+                                sh """#!/busybox/sh
+                                    set -eu
+
+                                    /kaniko/executor \
+                                      --context "${WORKSPACE}" \
+                                      --dockerfile "${WORKSPACE}/${svc.dockerfile}" \
+                                      --destination "${ECR_REGISTRY}/${svc.image}:${IMAGE_TAG}" \
+                                      --snapshot-mode=redo
+                                """
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Update Helm values.yaml in GitOps Repo') {
+            steps {
+                container('tools') {
+                    sshagent([env.GITOPS_SSH_CREDENTIALS_ID]) {
+                        script {
+                            sh '''
+                                rm -rf gitops-repo
+
+                                mkdir -p ~/.ssh
+                                ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+                                git clone --branch "$GITOPS_BRANCH" "$GITOPS_REPO" gitops-repo
+                            '''
+
+                            services.each { svc ->
+                                sh """
+                                    yq -i '.services.${svc.valuesKey}.image.repository = "${ECR_REGISTRY}/${svc.image}"' gitops-repo/charts/values.yaml
+                                    yq -i '.services.${svc.valuesKey}.image.tag = "${IMAGE_TAG}"' gitops-repo/charts/values.yaml
+                                """
+                            }
+
+                            sh '''
+                                cd gitops-repo
+
+                                git config user.email "jenkins@yourcompany.com"
+                                git config user.name "jenkins-ci"
+
+                                git add charts/values.yaml
+
+                                if git diff --cached --quiet; then
+                                    echo "No changes to commit"
+                                else
+                                    git commit -m "Update images for build ${IMAGE_TAG}"
+                                    git push origin "$GITOPS_BRANCH"
+                                fi
+                            '''
+                        }
                     }
                 }
             }
@@ -103,8 +204,9 @@ pipeline {
 
     post {
         success {
-            echo "All services built, pushed, and Helm chart updated. ArgoCD will sync automatically."
+            echo "All services built, pushed to ECR, and Helm values.yaml updated. ArgoCD can now sync."
         }
+
         failure {
             echo "Build failed."
         }
