@@ -30,7 +30,7 @@ spec:
       tty: true
 
     - name: awscli
-      image: amazon/aws-cli:2
+      image: public.ecr.aws/aws-cli/aws-cli:latest
       command:
         - cat
       tty: true
