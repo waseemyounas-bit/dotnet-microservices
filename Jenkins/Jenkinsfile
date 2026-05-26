@@ -73,22 +73,27 @@ spec:
         }
 
         stage('Checkout Application Repo') {
-            steps {
-                container('tools') {
-                    checkout scm
+    steps {
+        container('tools') {
+            checkout scm
 
-                    script {
-                        def shortCommit = sh(
-                            script: 'git rev-parse --short=8 HEAD',
-                            returnStdout: true
-                        ).trim()
+            sh '''
+                git config --global --add safe.directory "$WORKSPACE"
+                git status
+            '''
 
-                        env.IMAGE_TAG = "${env.BUILD_NUMBER}-${shortCommit}"
-                        echo "IMAGE_TAG = ${env.IMAGE_TAG}"
-                    }
-                }
+            script {
+                def shortCommit = sh(
+                    script: 'git rev-parse --short=8 HEAD',
+                    returnStdout: true
+                ).trim()
+
+                env.IMAGE_TAG = "${env.BUILD_NUMBER}-${shortCommit}"
+                echo "IMAGE_TAG = ${env.IMAGE_TAG}"
             }
-        }
+           }
+         }
+       }
 
         stage('Restore and Build .NET Projects') {
             steps {
