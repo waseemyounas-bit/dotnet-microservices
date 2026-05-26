@@ -113,6 +113,24 @@ spec:
             }
         }
 
+stage('Debug AWS Credentials') {
+    steps {
+        container('awscli') {
+            withCredentials([[
+                $class: 'AmazonWebServicesCredentialsBinding',
+                credentialsId: "${AWS_CREDENTIALS_ID}"
+            ]]) {
+                sh """
+                    echo "Testing AWS credentials..."
+                    echo "AWS_ACCESS_KEY_ID length: \${#AWS_ACCESS_KEY_ID}"
+                    echo "AWS_SECRET_ACCESS_KEY length: \${#AWS_SECRET_ACCESS_KEY}"
+                    aws sts get-caller-identity --region ${AWS_REGION}
+                """
+            }
+        }
+    }
+}
+
         stage('Ensure ECR Repositories Exist') {
             steps {
                 container('awscli') {
