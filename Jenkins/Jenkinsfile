@@ -91,9 +91,40 @@ spec:
                 env.IMAGE_TAG = "${env.BUILD_NUMBER}-${shortCommit}"
                 echo "IMAGE_TAG = ${env.IMAGE_TAG}"
             }
-           }
-         }
-       }
+            
+            // Debug: Print directory structure and find Dockerfiles
+            sh '''
+                echo "========================================="
+                echo "=== Current Working Directory ==="
+                pwd
+                echo ""
+                
+                echo "=== Workspace Directory Contents ==="
+                ls -la /home/jenkins/agent/workspace/SampleBank/
+                echo ""
+                
+                echo "=== SRC Directory Structure (3 levels) ==="
+                find /home/jenkins/agent/workspace/SampleBank/src -maxdepth 3 -type d 2>/dev/null || echo "src directory not found"
+                echo ""
+                
+                echo "=== ALL Dockerfiles Found ==="
+                find /home/jenkins/agent/workspace/SampleBank -name "Dockerfile" -o -name "dockerfile" 2>/dev/null
+                echo ""
+                
+                echo "=== Detailed listing of each Dockerfile ==="
+                for dockerfile in $(find /home/jenkins/agent/workspace/SampleBank -name "Dockerfile" -o -name "dockerfile" 2>/dev/null); do
+                    echo "----------------------------------------"
+                    echo "Dockerfile: $dockerfile"
+                    echo "Directory: $(dirname $dockerfile)"
+                    ls -la $(dirname $dockerfile)
+                    echo ""
+                done
+                
+                echo "========================================="
+            '''
+        }
+    }
+}
 
         stage('Restore and Build .NET Projects') {
             steps {
