@@ -1,5 +1,5 @@
 def services = [
-    [name: 'apigateways',   dockerfile: 'src/apigateways/OcelotApiGateway/Dockerfile',        image: 'ocelot-api-gateway', valuesKey: 'apigateways'],
+    [name: 'apigateways',   dockerfile: 'src/ApiGateways/OcelotApiGateway/Dockerfile',        image: 'ocelot-api-gateway', valuesKey: 'apigateways'],
     [name: 'account',       dockerfile: 'src/services/account/account.api/Dockerfile',        image: 'account-api',        valuesKey: 'account'],
     [name: 'customer-grpc', dockerfile: 'src/services/customer/customer.grpc/Dockerfile',     image: 'customer-grpc',      valuesKey: 'customerGrpc'],
     [name: 'customer-api',  dockerfile: 'src/services/customer/customer.api/Dockerfile',      image: 'customer-api',       valuesKey: 'customerApi'],
