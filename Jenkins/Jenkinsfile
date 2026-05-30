@@ -204,6 +204,7 @@ stage('Debug AWS Credentials') {
                                       --context "${WORKSPACE}" \
                                       --dockerfile "${WORKSPACE}/${svc.dockerfile}" \
                                       --destination "${ECR_REGISTRY}/${svc.image}:${IMAGE_TAG}" \
+                                      --ignore-path=/product_uuid\
                                       --snapshot-mode=redo
                                 """
                             }
