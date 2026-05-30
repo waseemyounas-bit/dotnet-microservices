@@ -28,7 +28,7 @@ USER root
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 # Switch back to the app user
-USER app
+USER 1654
 
 WORKDIR /app
 COPY --from=publish /app/publish .
