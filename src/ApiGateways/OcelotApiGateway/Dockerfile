@@ -8,8 +8,8 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["ApiGateways/OcelotApiGateway/OcelotApiGateway.csproj", "ApiGateways/OcelotApiGateway/"]
-RUN dotnet restore "./ApiGateways/OcelotApiGateway/./OcelotApiGateway.csproj"
+COPY ["src/ApiGateways/OcelotApiGateway/OcelotApiGateway.csproj", "src/ApiGateways/OcelotApiGateway/"]
+RUN dotnet restore "./src/ApiGateways/OcelotApiGateway/./OcelotApiGateway.csproj"
 COPY . .
 WORKDIR "/src/ApiGateways/OcelotApiGateway"
 RUN dotnet build "./OcelotApiGateway.csproj" -c $BUILD_CONFIGURATION -o /app/build
