@@ -218,7 +218,6 @@ rm -rf /kaniko/stages/* /cache/* || true
   --destination "${ECR_REGISTRY}/${svc.image}:${IMAGE_TAG}" \\
   --snapshot-mode=redo \\
   --ignore-path=/product_uuid \\
-  --cleanup
 """
                     }
                 }
