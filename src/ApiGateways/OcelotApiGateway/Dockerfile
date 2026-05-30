@@ -17,7 +17,7 @@ COPY . .
 
 RUN dotnet restore "src/ApiGateways/OcelotApiGateway/OcelotApiGateway.csproj"
 
-WORKDIR "/src/ApiGateways/OcelotApiGateway"
+WORKDIR "/src/src/ApiGateways/OcelotApiGateway"
 
 RUN dotnet build "OcelotApiGateway.csproj" \
     -c $BUILD_CONFIGURATION \
