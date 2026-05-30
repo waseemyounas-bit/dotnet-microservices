@@ -185,34 +185,47 @@ stage('Debug AWS Credentials') {
                 }
             }
         }
+        stage('Clean Workspace Before Kaniko') {
+    steps {
+        container('tools') {
+            sh '''
+                find . -type d \\( -name bin -o -name obj \\) -prune -exec rm -rf {} +
+                du -sh .
+            '''
+        }
+    }
+}
 
         stage('Build and Push Docker Images with Kaniko') {
-            steps {
-                container('kaniko') {
-                    withCredentials([[
-                        $class: 'AmazonWebServicesCredentialsBinding',
-                        credentialsId: "${AWS_CREDENTIALS_ID}"
-                    ]]) {
-                        script {
-                            services.each { svc ->
-                                echo "Building and pushing ${svc.name}"
+    steps {
+        container(name: 'kaniko', shell: '/busybox/sh') {
+            withCredentials([[
+                $class: 'AmazonWebServicesCredentialsBinding',
+                credentialsId: "${AWS_CREDENTIALS_ID}"
+            ]]) {
+                script {
+                    services.each { svc ->
+                        echo "Building and pushing ${svc.name}"
 
-                                sh """#!/busybox/sh
-                                    set -eu
+                        sh """#!/busybox/sh
+set -eux
 
-                                    /kaniko/executor \
-                                      --context "${WORKSPACE}" \
-                                      --dockerfile "${WORKSPACE}/${svc.dockerfile}" \
-                                      --destination "${ECR_REGISTRY}/${svc.image}:${IMAGE_TAG}" \
-                                      --ignore-path=/product_uuid\
-                                      --snapshot-mode=redo
-                                """
-                            }
-                        }
+rm -rf /kaniko/stages/* /cache/* || true
+
+/kaniko/executor \\
+  --context "${WORKSPACE}" \\
+  --dockerfile "${WORKSPACE}/${svc.dockerfile}" \\
+  --destination "${ECR_REGISTRY}/${svc.image}:${IMAGE_TAG}" \\
+  --snapshot-mode=redo \\
+  --ignore-path=/product_uuid \\
+  --cleanup
+"""
                     }
                 }
             }
         }
+    }
+}
 
         stage('Update Helm values.yaml in GitOps Repo') {
             steps {
