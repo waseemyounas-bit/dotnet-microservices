@@ -9,7 +9,7 @@ RUN apt-get update && \
 
 USER 1654
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS publish
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
@@ -17,21 +17,11 @@ COPY . .
 
 RUN dotnet restore "src/ApiGateways/OcelotApiGateway/OcelotApiGateway.csproj"
 
-WORKDIR "/src/src/ApiGateways/OcelotApiGateway"
-
-RUN dotnet build "OcelotApiGateway.csproj" \
-    -c $BUILD_CONFIGURATION \
-    -o /app/build \
-    --no-restore
-
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-
-RUN dotnet publish "OcelotApiGateway.csproj" \
+RUN dotnet publish "src/ApiGateways/OcelotApiGateway/OcelotApiGateway.csproj" \
     -c $BUILD_CONFIGURATION \
     -o /app/publish \
     /p:UseAppHost=false \
-    --no-build
+    --no-restore
 
 FROM base AS final
 WORKDIR /app
