@@ -1,10 +1,10 @@
 def services = [
-    [name: 'apigateways',   dockerfile: 'src/ApiGateways/OcelotApiGateway/Dockerfile',     image: 'ocelot-api-gateway', valuesKey: 'apigateways'],
+    // [name: 'apigateways',   dockerfile: 'src/ApiGateways/OcelotApiGateway/Dockerfile',     image: 'ocelot-api-gateway', valuesKey: 'apigateways'],
     [name: 'account',       dockerfile: 'src/Services/Account/Account.API/Dockerfile',      image: 'account-api',        valuesKey: 'account'],
-    [name: 'customer-grpc', dockerfile: 'src/Services/Customer/Customer.GRPC/Dockerfile',  image: 'customer-grpc',      valuesKey: 'customerGrpc'],
-    [name: 'customer-api',  dockerfile: 'src/Services/Customer/Customer.API/Dockerfile',   image: 'customer-api',       valuesKey: 'customerApi'],
-    [name: 'transaction',   dockerfile: 'src/Services/Transaction/Transaction.API/Dockerfile', image: 'transaction-api', valuesKey: 'transaction'],
-    [name: 'webstatus',     dockerfile: 'src/WebApps/WebStatus/Dockerfile',                image: 'webstatus-ui',       valuesKey: 'webstatus']
+    // [name: 'customer-grpc', dockerfile: 'src/Services/Customer/Customer.GRPC/Dockerfile',  image: 'customer-grpc',      valuesKey: 'customerGrpc'],
+    // [name: 'customer-api',  dockerfile: 'src/Services/Customer/Customer.API/Dockerfile',   image: 'customer-api',       valuesKey: 'customerApi'],
+    // [name: 'transaction',   dockerfile: 'src/Services/Transaction/Transaction.API/Dockerfile', image: 'transaction-api', valuesKey: 'transaction'],
+    // [name: 'webstatus',     dockerfile: 'src/WebApps/WebStatus/Dockerfile',                image: 'webstatus-ui',       valuesKey: 'webstatus']
 ]
 
 pipeline {
