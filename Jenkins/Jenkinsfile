@@ -196,29 +196,48 @@ stage('Debug AWS Credentials') {
     }
 }
 
-        stage('Build and Push Docker Images with Kaniko') {
+stage('Build and Push Docker Images with Kaniko') {
     steps {
-        container(name: 'kaniko', shell: '/busybox/sh') {
-            withCredentials([[
-                $class: 'AmazonWebServicesCredentialsBinding',
-                credentialsId: "${AWS_CREDENTIALS_ID}"
-            ]]) {
-                script {
-                    services.each { svc ->
-                        echo "Building and pushing ${svc.name}"
+        script {
+            services.each { svc ->
+                echo "Building and pushing ${svc.name}"
 
-                        sh """#!/busybox/sh
+                podTemplate(
+                    label: "kaniko-${svc.name}-${env.BUILD_NUMBER}",
+                    yaml: """
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+    - name: kaniko
+      image: gcr.io/kaniko-project/executor:debug
+      command:
+        - /busybox/cat
+      tty: true
+    - name: jnlp
+      image: jenkins/inbound-agent:jdk21
+"""
+                ) {
+                    node("kaniko-${svc.name}-${env.BUILD_NUMBER}") {
+                        checkout scm
+
+                        container(name: 'kaniko', shell: '/busybox/sh') {
+                            withCredentials([[
+                                $class: 'AmazonWebServicesCredentialsBinding',
+                                credentialsId: "${AWS_CREDENTIALS_ID}"
+                            ]]) {
+                                sh """#!/busybox/sh
 set -eux
-
-rm -rf /kaniko/stages/* /cache/* || true
 
 /kaniko/executor \\
   --context "${WORKSPACE}" \\
   --dockerfile "${WORKSPACE}/${svc.dockerfile}" \\
   --destination "${ECR_REGISTRY}/${svc.image}:${IMAGE_TAG}" \\
   --snapshot-mode=redo \\
-  --ignore-path=/product_uuid \\
+  --ignore-path=/product_uuid
 """
+                            }
+                        }
                     }
                 }
             }
