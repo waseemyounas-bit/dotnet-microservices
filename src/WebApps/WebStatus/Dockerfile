@@ -9,7 +9,7 @@ WORKDIR /src
 
 COPY . .
 
-RUN dotnet restore "WebApps/WebStatus/WebStatus.csproj"
+RUN dotnet restore "src/WebApps/WebStatus/WebStatus.csproj"
 
 RUN dotnet publish "WebApps/WebStatus/WebStatus.csproj" \
     -c $BUILD_CONFIGURATION \
