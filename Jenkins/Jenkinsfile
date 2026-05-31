@@ -55,8 +55,8 @@ spec:
         AWS_CREDENTIALS_ID = 'aws-prod-credentials'
         GITOPS_SSH_CREDENTIALS_ID = 'gitops-ssh-key'
 
-        GITOPS_REPO = 'git@github.com:your-org/my-api.git'
-        GITOPS_BRANCH = 'main'
+        GITOPS_REPO = 'git@github.com:waseemyounas-bit/dotnet-microservices.git'
+        GITOPS_BRANCH = 'master'
     }
 
     stages {
