@@ -261,8 +261,8 @@ set -eux
 
                             services.each { svc ->
     sh """
-        yq -i '.services.${svc.valuesKey}.image.repository = "${ECR_REGISTRY}/${svc.image}"' gitops-repo/my-api/charts/values.yaml
-        yq -i '.services.${svc.valuesKey}.image.tag = "${IMAGE_TAG}"' gitops-repo/my-api/charts/values.yaml
+        yq -i '.services.${svc.valuesKey}.image.repository = "${ECR_REGISTRY}/${svc.image}"' gitops-repo/my-api/values.yaml
+        yq -i '.services.${svc.valuesKey}.image.tag = "${IMAGE_TAG}"' gitops-repo/my-api/values.yaml
     """
 }
 
