@@ -269,10 +269,10 @@ set -eux
 sh '''
     cd gitops-repo
 
-    git config user.email "jenkins@yourcompany.com"
-    git config user.name "jenkins-ci"
+    git config user.email "iamwaseemyounas@yahoo.com"
+    git config user.name "waseemyounas-bit"
 
-    git add my-api/charts/values.yaml
+    git add my-api/values.yaml
 
     if git diff --cached --quiet; then
         echo "No changes to commit"
