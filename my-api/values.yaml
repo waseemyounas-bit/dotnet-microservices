@@ -151,24 +151,24 @@ services:
   account:
     image:
       repository: 007079198698.dkr.ecr.eu-north-1.amazonaws.com/account-api
-      tag: 52-dee0176b
+      tag: 53-983f451d
   apigateways:
     image:
       repository: 007079198698.dkr.ecr.eu-north-1.amazonaws.com/ocelot-api-gateway
-      tag: 52-dee0176b
+      tag: 53-983f451d
   customerGrpc:
     image:
       repository: 007079198698.dkr.ecr.eu-north-1.amazonaws.com/customer-grpc
-      tag: 52-dee0176b
+      tag: 53-983f451d
   customerApi:
     image:
       repository: 007079198698.dkr.ecr.eu-north-1.amazonaws.com/customer-api
-      tag: 52-dee0176b
+      tag: 53-983f451d
   transaction:
     image:
       repository: 007079198698.dkr.ecr.eu-north-1.amazonaws.com/transaction-api
-      tag: 52-dee0176b
+      tag: 53-983f451d
   webstatus:
     image:
       repository: 007079198698.dkr.ecr.eu-north-1.amazonaws.com/webstatus-ui
-      tag: 52-dee0176b
+      tag: 53-983f451d
