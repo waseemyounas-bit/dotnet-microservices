@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using Prometheus;
 using Transaction.API.Data.Interfaces;
 using Transaction.API.EventBusConsumer;
 using Transaction.API.Repositories;
@@ -65,6 +66,10 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseHttpMetrics();
+
+app.MapMetrics();
 
 app.MapHealthChecks("/hc", new HealthCheckOptions
 {

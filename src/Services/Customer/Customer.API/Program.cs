@@ -6,6 +6,7 @@ using Customer.Infrastructure.Persistence;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
+using Prometheus;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -50,6 +51,10 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseHttpMetrics();
+
+app.MapMetrics();
 
 app.MapHealthChecks("/hc", new HealthCheckOptions
 {

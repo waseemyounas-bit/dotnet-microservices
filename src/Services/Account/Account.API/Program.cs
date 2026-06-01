@@ -7,6 +7,7 @@ using Common.Logging;
 using Customer.GRPC.Protos;
 using HealthChecks.UI.Client;
 using MassTransit;
+using Prometheus;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -70,6 +71,10 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseHttpMetrics();
+
+app.MapMetrics();
 
 app.MapHealthChecks("/hc", new HealthCheckOptions
 {
