@@ -1,5 +1,6 @@
 replicaCount: 1
-imagePullSecrets: []
+imagePullSecrets:
+  - name: ecr-regcred
 
 livenessProbe:
   httpGet:
