@@ -43,6 +43,19 @@ ingress:
         - path: /
           pathType: ImplementationSpecific
   tls: []
+httpRoute:
+  enabled: false
+  annotations: {}
+  parentRefs:
+    - name: gateway
+      sectionName: http
+  hostnames:
+    - chart-example.local
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
 services:
   account:
     enabled: true
