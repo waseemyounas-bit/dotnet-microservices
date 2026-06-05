@@ -19,6 +19,7 @@ namespace Account.API.Controllers
         private readonly IMediator _mediator;
         private readonly CustomerGrpcService _customerGrpcService;
         private readonly IPublishEndpoint _publishEndpoint;
+        private readonly string _accountTransactionQueue=string.Empty;
 
         public AccountsController(IMediator mediator, CustomerGrpcService customerGrpcService, IPublishEndpoint publishEndpoint)
         {
