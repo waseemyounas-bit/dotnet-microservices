@@ -89,35 +89,30 @@ pipeline {
             }
         }
 
-        stage('Debug Workspace') {
+        stage('Update Helm Values') {
     steps {
-        sh '''
-        pwd
-        ls -la
-        find . -name ".git" -type d
-        '''
+        dir("${env.WORKSPACE}") {
+            sh '''
+            git config --global --add safe.directory "$WORKSPACE"
+
+            git config user.email "iamwaseemyounas@yahoo.com"
+            git config user.name "waseemyounas-bit"
+
+            yq -i '.services.account.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
+            yq -i '.services.apigateways.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
+            yq -i '.services.customerGrpc.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
+            yq -i '.services.customerApi.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
+            yq -i '.services.transaction.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
+            yq -i '.services.webstatus.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
+
+            git status
+            git add my-api/values.yaml
+            git commit -m "Update microservice images to $IMAGE_TAG" || echo "No changes to commit"
+            git push origin master
+            '''
+        }
     }
 }
-
-        stage('Update Helm Values') {
-            steps {
-                sh '''
-                git config user.email "iamwaseemyounas@yahoo.com"
-                git config user.name "waseemyounas-bit"
-
-                yq -i '.services.account.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
-                yq -i '.services.api-gateway.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
-                yq -i '.services.customer-grpc.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
-                yq -i '.services.customer-api.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
-                yq -i '.services.transaction.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
-                yq -i '.services.webstatus.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
-
-                git add my-api/values.yaml
-                git commit -m "Update microservice images to $IMAGE_TAG" || echo "No changes to commit"
-                git push origin master
-                '''
-            }
-        }
     }
 
     post {
