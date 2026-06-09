@@ -45,18 +45,34 @@ pipeline {
 }
 
         stage('Build Images') {
-            steps {
-                sh '''
-                docker build -t $ECR_REGISTRY/account-api:$IMAGE_TAG ./Account.API
-                docker build -t $ECR_REGISTRY/ocelot-api-gateway:$IMAGE_TAG ./ApiGateway
-                docker build -t $ECR_REGISTRY/customer-grpc:$IMAGE_TAG ./Customer.Grpc
-                docker build -t $ECR_REGISTRY/customer-api:$IMAGE_TAG ./Customer.API
-                docker build -t $ECR_REGISTRY/transaction-api:$IMAGE_TAG ./Transaction.API
-                docker build -t $ECR_REGISTRY/webstatus-ui:$IMAGE_TAG ./WebStatus
-                '''
-            }
-        }
+    steps {
+        sh '''
+        docker build \
+          -t $ECR_REGISTRY/account-api:$IMAGE_TAG \
+          -f src/Services/Account/Account.API/Dockerfile .
 
+        docker build \
+          -t $ECR_REGISTRY/ocelot-api-gateway:$IMAGE_TAG \
+          -f src/ApiGateways/OcelotApiGateway/Dockerfile .
+
+        docker build \
+          -t $ECR_REGISTRY/customer-grpc:$IMAGE_TAG \
+          -f src/Services/Customer/Customer.GRPC/Dockerfile .
+
+        docker build \
+          -t $ECR_REGISTRY/customer-api:$IMAGE_TAG \
+          -f src/Services/Customer/Customer.API/Dockerfile .
+
+        docker build \
+          -t $ECR_REGISTRY/transaction-api:$IMAGE_TAG \
+          -f src/Services/Transaction/Transaction.API/Dockerfile .
+
+        docker build \
+          -t $ECR_REGISTRY/webstatus-ui:$IMAGE_TAG \
+          -f src/WebApps/WebStatus/Dockerfile .
+        '''
+    }
+}
         stage('Push Images') {
             steps {
                 sh '''
