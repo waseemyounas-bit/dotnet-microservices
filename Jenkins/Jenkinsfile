@@ -20,17 +20,17 @@ pipeline {
         }
 
         stage('Verify Agent Tools') {
-            steps {
-                sh '''
-                whoami
-                docker --version
-                aws --version
-                git --version
-                yq --version
-                aws sts get-caller-identity
-                '''
-            }
-        }
+    steps {
+        sh '''
+        id
+        docker --version
+        aws --version
+        git --version
+        yq --version
+        aws sts get-caller-identity
+        '''
+    }
+}
 
         stage('Login to ECR') {
             steps {
