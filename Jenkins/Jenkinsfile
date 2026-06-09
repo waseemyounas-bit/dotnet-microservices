@@ -89,6 +89,16 @@ pipeline {
             }
         }
 
+        stage('Debug Workspace') {
+    steps {
+        sh '''
+        pwd
+        ls -la
+        find . -name ".git" -type d
+        '''
+    }
+}
+
         stage('Update Helm Values') {
             steps {
                 sh '''
