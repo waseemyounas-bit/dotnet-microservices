@@ -89,14 +89,17 @@ pipeline {
             }
         }
 
-        stage('Update Helm Values') {
+      stage('Update Helm Values') {
     steps {
         dir("${env.WORKSPACE}") {
             sh '''
             git config --global --add safe.directory "$WORKSPACE"
-
             git config user.email "iamwaseemyounas@yahoo.com"
             git config user.name "waseemyounas-bit"
+
+            git fetch origin master
+            git checkout master
+            git pull origin master
 
             yq -i '.services.account.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
             yq -i '.services.apigateways.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
@@ -105,7 +108,6 @@ pipeline {
             yq -i '.services.transaction.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
             yq -i '.services.webstatus.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
 
-            git status
             git add my-api/values.yaml
             git commit -m "Update microservice images to $IMAGE_TAG" || echo "No changes to commit"
             git push origin master
