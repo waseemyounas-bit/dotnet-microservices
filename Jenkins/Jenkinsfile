@@ -92,26 +92,33 @@ pipeline {
       stage('Update Helm Values') {
     steps {
         dir("${env.WORKSPACE}") {
-            sh '''
-            git config --global --add safe.directory "$WORKSPACE"
-            git config user.email "iamwaseemyounas@yahoo.com"
-            git config user.name "waseemyounas-bit"
+            withCredentials([usernamePassword(
+                credentialsId: 'github-token',
+                usernameVariable: 'GIT_USERNAME',
+                passwordVariable: 'GIT_TOKEN'
+            )]) {
+                sh '''
+                git config --global --add safe.directory "$WORKSPACE"
+                git config user.email "iamwaseemyounas@yahoo.com"
+                git config user.name "waseemyounas-bit"
 
-            git fetch origin master
-            git checkout master
-            git pull origin master
+                git fetch origin master
+                git checkout master
+                git pull origin master
 
-            yq -i '.services.account.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
-            yq -i '.services.apigateways.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
-            yq -i '.services.customerGrpc.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
-            yq -i '.services.customerApi.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
-            yq -i '.services.transaction.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
-            yq -i '.services.webstatus.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
+                yq -i '.services.account.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
+                yq -i '.services.apigateways.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
+                yq -i '.services.customerGrpc.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
+                yq -i '.services.customerApi.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
+                yq -i '.services.transaction.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
+                yq -i '.services.webstatus.image.tag = strenv(IMAGE_TAG)' my-api/values.yaml
 
-            git add my-api/values.yaml
-            git commit -m "Update microservice images to $IMAGE_TAG" || echo "No changes to commit"
-            git push origin master
-            '''
+                git add my-api/values.yaml
+                git commit -m "Update microservice images to $IMAGE_TAG" || echo "No changes to commit"
+
+                git push https://$GIT_USERNAME:$GIT_TOKEN@github.com/waseemyounas-bit/dotnet-microservices.git master
+                '''
+            }
         }
     }
 }
