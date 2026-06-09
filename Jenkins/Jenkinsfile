@@ -1,11 +1,14 @@
 pipeline {
     agent {
-        docker {
-            image 'jenkins-docker-agent:latest'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
-        }
+    docker {
+        image 'jenkins-docker-agent:latest'
+        args '''
+          -u root
+          -v /var/run/docker.sock:/var/run/docker.sock
+          -e HOME=/tmp
+        '''
     }
-
+}
     environment {
         AWS_REGION   = 'eu-north-1'
         ECR_REGISTRY = '007079198698.dkr.ecr.eu-north-1.amazonaws.com'
