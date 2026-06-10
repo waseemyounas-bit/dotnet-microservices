@@ -58,7 +58,7 @@ services:
     port: 80
     image:
       repository: 007079198698.dkr.ecr.eu-north-1.amazonaws.com/account-api
-      tag: "14-253ec995"
+      tag: "3-3e911726"
       pullPolicy: IfNotPresent
   api-gateway:
     enabled: true
@@ -86,24 +86,24 @@ services:
     port: 80
     image:
       repository: 007079198698.dkr.ecr.eu-north-1.amazonaws.com/transaction-api
-      tag: "14-253ec995"
+      tag: "3-3e911726"
       pullPolicy: IfNotPresent
   webstatus:
     enabled: true
     port: 80
     image:
       repository: 007079198698.dkr.ecr.eu-north-1.amazonaws.com/webstatus-ui
-      tag: "14-253ec995"
+      tag: "3-3e911726"
       pullPolicy: IfNotPresent
   apigateways:
     image:
       repository: 007079198698.dkr.ecr.eu-north-1.amazonaws.com/ocelot-api-gateway
-      tag: 14-253ec995
+      tag: 3-3e911726
   customerGrpc:
     image:
       repository: 007079198698.dkr.ecr.eu-north-1.amazonaws.com/customer-grpc
-      tag: 14-253ec995
+      tag: 3-3e911726
   customerApi:
     image:
       repository: 007079198698.dkr.ecr.eu-north-1.amazonaws.com/customer-api
-      tag: 14-253ec995
+      tag: 3-3e911726
